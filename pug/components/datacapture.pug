@@ -1,0 +1,157 @@
+//------------------------------------
+  *** HOW TO USE ***
+  PUG:
+  datacapture
+  
+  STANDARD HTML:
+  <datacapture></datacapture>
+//------------------------------------
+//-===================================
+template
+  div.ui.grid
+    div.two.column.row
+      .column
+        // EMPTY (unset)
+        h3(v-show='!show.capture')
+          br
+          | Joe: &nbsp;
+          span(v-if='capture.field1 != null') {{capture.field1.title}}
+          a.cursor(v-if='capture.field1 == null' v-on:click='show.capture = true') Unset
+          
+        // DROP DOWN (set)
+        .ui.menu(v-show="show.capture")
+          a.item
+            | Joe:
+          .link.item(v-if='saving.data')
+            span.text Saving...
+          #dropdown1.ui.pointing.dropdown.link.item(v-show='!saving.data')
+            span.text Options
+            i.dropdown.icon
+            .menu
+              .header Available Options
+              .item(v-for="o in dropdown.options" v-on:click='capture.field1 = o')
+                | {{o.title}}  
+        p(v-show='show.warning') 
+          | Must select an option from the dropdown before saving.
+          
+      // BUTTON BEHAVIORS
+      .column
+        div(style='margin-top: 18px')
+          button.ui.white.right.labeled.icon.button.left-margin-10(v-if='!show.capture' v-on:click='show.capture = true')
+            | Edit
+            i.edit.icon
+          button.ui.red.right.labeled.icon.button.left-margin-10(v-if='!show.capture && capture.field1 != null' v-on:click='capture.field1 = null')
+            | Clear
+            i.cancel.icon
+          button.ui.primary.right.labeled.icon.button.left-margin-10(v-if='show.capture' v-on:click='saveData()' v-show='!saving.data')
+            | Save
+            i.save.icon
+          button.ui.primary.loading.button(v-show='saving.data')
+            | Saving
+          button.ui.orange.right.labeled.icon.button.left-margin-10(v-if='show.capture' v-on:click='show.capture = false' :disabled='saving.data')
+            | Cancel
+            i.cancel.icon
+
+    div(style='position: fixed; bottom: 10px; right: 10px' v-show='saving.complete')
+      a.ui.green.label.large(v-on:click='saving.complete = false')
+        i.check.circle.icon 
+        | Saved!
+          
+//-===================================
+//-===================================
+script.
+  export default {
+    data: function() {
+      return {
+        dropdown:{
+          options: [
+            {id: 0, title: "Option A"},
+            {id: 1, title: "Option B"},
+            {id: 2, title: "Option C"},
+            {id: 3, title: "Option D"}
+          ]
+        },
+        capture:{
+          field1: null
+        },
+        show:{
+          warning: false,
+          capture: false
+        },
+        saving:{
+          data: false,
+          complete: null
+        },
+        
+      }
+    },
+    created:function(){
+      var t = this;
+      $(function(){
+          $('#dropdown1').dropdown()
+      })
+    },
+    methods:{
+      saveData: function(){
+        var t = this;
+        // VALIDATION CHECK
+        if(t.capture.field1 == null){
+          t.show.warning = true;
+        }
+        else{
+          t.show.warning = false;
+          // mock ajax request
+          t.saving.data = true;
+          
+          // PREPARE DATA FOR UPLOAD
+          var packet = {
+            field1: t.capture.field1
+          }
+          console.log(JSON.stringify(packet))
+          // AJAX REQUEST (disabled)
+          /*
+          t.saving.data = false;
+          t.show.capture = false;
+          t.saving.complete = false;
+          
+          $.ajax({
+            type: "POST",
+            url: "http://database.location.endpoint",
+            data: JSON.stringify(packet),
+            success: function(){
+              t.saving.data = false;
+              t.show.capture = false;
+              t.saving.complete = true;
+              setTimeout(function(){
+                t.saving.complete = true;
+              }, 2000)
+            },
+            error: function(){
+              alert("file upload failure")
+            }
+          });
+          */
+          
+          // MOCK AJAX REQUEST
+          setTimeout(function(){
+            t.saving.data = false;
+            t.show.capture = false;
+            t.saving.complete = true;
+            setTimeout(function(){
+              t.saving.complete = null;
+            }, 2000)
+          }, 2000)
+        }
+
+        
+      },
+    },
+    beforeDestroy:function(){
+      
+    }
+  }
+//-===================================
+//-===================================
+style(lang='css').
+  /* PENDING VUE-EXPRESS UPDATE */
+//-===================================
